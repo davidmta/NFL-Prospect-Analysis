@@ -15,18 +15,13 @@ def store_data(soup,cur):
         if root and draft_branch and pos_branch:
             url = root.group(0) + "&" + draft_branch.group(0) + "&" + pos_branch.group(0)
             profile_entry = parse_profiles(url)
-            print profile_entry
-            print len(profile_entry)
-            #profile_entry = token_fix(profile_entry)
-#cur.execute("INSERT INTO URL VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')" % (url,profile_entry[0],profile_entry[1],profile_entry[2],profile_entry[3],profile_entry[4],profile_entry[5],profile_entry[6],profile_entry[7],profile_entry[8],profile_entry[9]))
-#,profile_entry[10],profile_entry[11],profile_entry[12]
+            profile_entry = token_fix(profile_entry)
+            cur.execute("INSERT INTO URL VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')" % (url,profile_entry[0],profile_entry[1],profile_entry[2],profile_entry[3],profile_entry[4],profile_entry[5],profile_entry[6],profile_entry[7],profile_entry[8],profile_entry[9],profile_entry[10],profile_entry[11],profile_entry[12],profile_entry[13],profile_entry[14],profile_entry[15],profile_entry[16],profile_entry[17],profile_entry[18],profile_entry[19],profile_entry[20],profile_entry[21],profile_entry[22],profile_entry[23],profile_entry[24]))
 
 def token_fix(profile_entry):
-    if not profile_entry[9] == "NULL":
-        print profile_entry[9]
-        profile_entry[9] = re.sub('[;"]', ' ', profile_entry[9])
-        print profile_entry[9]
-        return profile_entry
+    if profile_entry[11] != "NULL":
+        profile_entry[11] = re.sub('[\'\"]', ' ', profile_entry[11])
+    return profile_entry
 
 def get_data(cur):
     ##22
@@ -46,8 +41,7 @@ def attempt_connection():
         print(e)
 
 def create_table(cur):
-    cur.execute("CREATE TABLE URL(URL TEXT,NAME TEXT,POSITION TEXT,COLLEGE TEXT,CB_HEIGHT TEXT,CB_WEIGHT TEXT,CB_FORTY TEXT,CB_TWENTY TEXT,CB_TEN TEXT,CB_REPS TEXT,CB_VERT TEXT)")
-    #,CB_BROAD TEXT,CB_SHUTTLE TEXT,CB_DRILL TEXT
+    cur.execute("CREATE TABLE URL(URL TEXT,NAME TEXT,POSITION TEXT,COLLEGE TEXT,CB_INVITE TEXT,CB_HEIGHT TEXT,CB_WEIGHT TEXT,CB_FORTY TEXT,CB_TWENTY TEXT,CB_TEN TEXT,CB_REPS TEXT,CB_VERT TEXT,CB_BROAD TEXT,CB_SHUTTLE TEXT,CB_DRILL TEXT, PRO_INVITE TEXT, PRO_HEIGHT TEXT,PRO_WEIGHT TEXT,PRO_FORTY TEXT,PRO_TWENTY TEXT,PRO_TEN TEXT,PRO_REPS TEXT,PRO_VERT TEXT,PRO_BROAD TEXT,PRO_SHUTTLE TEXT,PRO_DRILL TEXT)")
 
 def main():
     url_list = []
@@ -56,8 +50,6 @@ def main():
         cur = con.cursor()
     create_table(cur)
     get_data(cur)
- 
-
     con.commit()
     con.close()
     return 0;
