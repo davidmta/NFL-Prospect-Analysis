@@ -14,15 +14,26 @@ def store_data(soup,cur):
         pos_branch = re.search('genpos\=\w+', link_str)
         if root and draft_branch and pos_branch:
             url = root.group(0) + "&" + draft_branch.group(0) + "&" + pos_branch.group(0)
-            
-            parse_profiles(url)
-#cur.execute("INSERT INTO URL VALUES('%s')"%url)
+            profile_entry = parse_profiles(url)
+            print profile_entry
+            print len(profile_entry)
+            #profile_entry = token_fix(profile_entry)
+#cur.execute("INSERT INTO URL VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')" % (url,profile_entry[0],profile_entry[1],profile_entry[2],profile_entry[3],profile_entry[4],profile_entry[5],profile_entry[6],profile_entry[7],profile_entry[8],profile_entry[9]))
+#,profile_entry[10],profile_entry[11],profile_entry[12]
 
+def token_fix(profile_entry):
+    if not profile_entry[9] == "NULL":
+        print profile_entry[9]
+        profile_entry[9] = re.sub('[;"]', ' ', profile_entry[9])
+        print profile_entry[9]
+        return profile_entry
 
 def get_data(cur):
+    ##22
     for year in range(0,1):
         urls = []
-        for listing in range(65,90):
+        #90
+        for listing in range(65,66):
             page = requests.get("http://www.nfldraftscout.com/searchcollege.php?draftyear=" + str(1999 + year) + "&colabbr=" + chr(listing))
             soup = BeautifulSoup(page.content, 'html.parser')
             store_data(soup,cur)
@@ -35,14 +46,15 @@ def attempt_connection():
         print(e)
 
 def create_table(cur):
-    cur.execute("CREATE TABLE URLA(URL TEXT)")
+    cur.execute("CREATE TABLE URL(URL TEXT,NAME TEXT,POSITION TEXT,COLLEGE TEXT,CB_HEIGHT TEXT,CB_WEIGHT TEXT,CB_FORTY TEXT,CB_TWENTY TEXT,CB_TEN TEXT,CB_REPS TEXT,CB_VERT TEXT)")
+    #,CB_BROAD TEXT,CB_SHUTTLE TEXT,CB_DRILL TEXT
 
 def main():
     url_list = []
     con = attempt_connection()
     with con:
         cur = con.cursor()
-    #create_table(cur)
+    create_table(cur)
     get_data(cur)
  
 

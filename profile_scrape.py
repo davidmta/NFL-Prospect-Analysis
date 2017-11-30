@@ -4,7 +4,7 @@ from lxml.html.soupparser import fromstring
 import re
 
 def parse_profiles(url):
-    page = requests.get(url)
+    page = requests.get("http://www.nfldraftscout.com/ratings/dsprofile.php?pyid=564&draftyear=1999&genpos=DE")
     soup = BeautifulSoup(page.content, 'html.parser')
     personal_info = soup.find_all('b')
     stats_info = soup.find_all('font')
@@ -12,19 +12,26 @@ def parse_profiles(url):
     profile_entry = parse_personal(personal_info,profile_entry)
     for i in range(1,len(soup.find_all('font'))):
         profile_entry = store_profile(profile_entry,personal_info,stats_info,i)
+    return profile_entry
 
 def store_profile(profile_entry,personal_info,stats_info,i):
     link_str = stats_info[i].__str__()
     stat_name = re.search('<font color="#000000" face="Verdana,Geneva,Arial,Helvetica,sans-serif" size="-2"><strong>', link_str)
+    
     if stat_name:
         entry_str = stats_info[i+1].__str__()
-        entry = re.search('>[\d.\'\"]+<',entry_str)
+        entry = re.search('>[\d.\'\\/ "Yes]+<',entry_str)
+        #<font color="#000000" face="Verdana,Geneva,Arial,Helvetica,sans-serif" size="-2">25 1/2</font>
+        # entry = re.search('>[\d.\'\\/\w+ "]+<',">25 1/2<")
+        print entry_str
         if entry:
             entry_len = len(entry.group(0))
             entry = entry.group(0)[1:entry_len-1]
+            
             profile_entry.append(entry)
         elif entry_str == '<font color="#000000" face="Verdana,Geneva,Arial,Helvetica,sans-serif" size="-2"></font>':
-            profile_entry.append(None)
+            print link_str
+            profile_entry.append("NULL")
     return profile_entry
 
 def strip_rawpos(pl_list):
