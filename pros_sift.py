@@ -21,14 +21,15 @@ def store_data(soup,cur):
 def token_fix(profile_entry):
     if profile_entry[11] != "NULL":
         profile_entry[11] = re.sub('[\'\"]', ' ', profile_entry[11])
+    if profile_entry[22] != "NULL":
+        profile_entry[22] = re.sub('[\'\"]', ' ', profile_entry[22])
     return profile_entry
 
 def get_data(cur):
-    ##22
-    for year in range(0,1):
+    #19
+    for year in range(18,19):
         urls = []
-        #90
-        for listing in range(65,66):
+        for listing in range(65,90):
             page = requests.get("http://www.nfldraftscout.com/searchcollege.php?draftyear=" + str(1999 + year) + "&colabbr=" + chr(listing))
             soup = BeautifulSoup(page.content, 'html.parser')
             store_data(soup,cur)
@@ -48,7 +49,7 @@ def main():
     con = attempt_connection()
     with con:
         cur = con.cursor()
-    create_table(cur)
+            #create_table(cur)
     get_data(cur)
     con.commit()
     con.close()
