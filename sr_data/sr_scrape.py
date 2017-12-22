@@ -199,13 +199,67 @@ def punting_and_kicking(tr,pk_stats):
     pk_stats_entry = stats_search('\"pos\"\s\>\w+\<\/td',pk_stats_entry,tr)
     ## Games
     pk_stats_entry = stats_search('stat\=\"g\"\s\>\d+\<\/td',pk_stats_entry,tr)
-
+    ## Punts
+    pk_stats_entry = stats_search('\"punt\"\s\>\d+\<\/td\>',pk_stats_entry,tr)
+    ## Punting Yards
+    pk_stats_entry = stats_search('\"punt\_yds\"\s\>\d+\<\/td',pk_stats_entry,tr)
+    ## Punting Yards Per Punt
+    pk_stats_entry = stats_search('\"punt\_yds\_per\_punt\"\s\>\d+\.\d+\<\/td',pk_stats_entry,tr)
+    ## Extra Point Made
+    pk_stats_entry = stats_search('\"xpm\"\s\>\d+\<\/td',pk_stats_entry,tr)
+    ## Extra Point Attempts
+    pk_stats_entry = stats_search('\"xpa\"\s\>\d+\<\/td',pk_stats_entry,tr)
+    ## Extra Point Percentage
+    pk_stats_entry = stats_search('\"xp\_pct\"\s\>\d+\<\/td',pk_stats_entry,tr)
+    ## Field Goals Made
+    pk_stats_entry = stats_search('\"fgm\"\s\>\d+\<\/td',pk_stats_entry,tr)
+    ## Field Goal Attempts
+    pk_stats_entry = stats_search('\"fga\"\s\>\d+\<\/td',pk_stats_entry,tr)
+    ## Field Goal Percentage
+    pk_stats_entry = stats_search('"fg_pct" >\d+\.\d+\<\/td',pk_stats_entry,tr)
+    ## Points Kicking
+    pk_stats_entry = stats_search('\"kick\_points\"\s\>\d+\<\/td',pk_stats_entry,tr)
+    
     pk_stats[year] = pk_stats_entry
-    print tr
     return pk_stats
+
+def punt_kick_returns(tr,pkreturn_stats):
+    year = int(parse_year(tr))
+    pkreturns_stats_entry = []
+    
+    ## School
+    pkreturns_stats_entry = stats_search('\"\/cfb\/schools\/\w+\/\d+\.html\"\>\w+\<\/a',pkreturns_stats_entry,tr)
+    ## Conferences
+    pkreturns_stats_entry = stats_search('\"\/cfb\/conferences\/.*?\/\d+\.html\"\>.*?\<\/a',pkreturns_stats_entry,tr)
+    ## Class
+    pkreturns_stats_entry = stats_search('class\"\s\>\w+\<\/',pkreturns_stats_entry,tr)
+    ## Position Played
+    pkreturns_stats_entry = stats_search('\"pos\"\s\>\w+\<\/td',pkreturns_stats_entry,tr)
+    ## Games
+    pkreturns_stats_entry = stats_search('stat\=\"g\"\s\>\d+\<\/td',pkreturns_stats_entry,tr)
+    ## Kickoff Returns
+    pkreturns_stats_entry = stats_search('\"kick\_ret\"\s\>\d+\<\/td',pkreturns_stats_entry,tr)
+    ## Kickoff Return Yards
+    pkreturns_stats_entry = stats_search('\"kick\_ret\_yds\"\s\>\d+\<\/td',pkreturns_stats_entry,tr)
+    ## Kickoff Return Yards Per Return
+    pkreturns_stats_entry = stats_search('\"kick\_ret\_yds\_per\_ret\"\s\>\d+\.\d+\<\/td',pkreturns_stats_entry,tr)
+    ## Kickoff Return Touchdowns
+    pkreturns_stats_entry = stats_search('\"kick\_ret\_td\"\s\>\d+\<\/td',pkreturns_stats_entry,tr)
+    ## Punt Returns
+    pkreturns_stats_entry = stats_search('\"punt\_ret\"\s\>\d+\<\/td',pkreturns_stats_entry,tr)
+    ## Punt Return Yards
+    pkreturns_stats_entry = stats_search('\"punt\_ret\_yds\"\s\>\d+\<\/td',pkreturns_stats_entry,tr)
+    ## Punt Return Yards Per Return
+    pkreturns_stats_entry = stats_search('\"punt\_ret\_yds\_per\_ret\"\s\>\d+\.\d+\<\/td',pkreturns_stats_entry,tr)
+    ## Punt Return Touchdowns
+    pkreturns_stats_entry = stats_search('\"punt\_ret\_td\"\s\>\d+\<\/td',pkreturns_stats_entry,tr)
+   
+    pkreturn_stats[year] = pkreturns_stats_entry
+    return pkreturn_stats
 
 def player_stats(player_url,years_active,player_name,categories):
     page = requests.get("https://www.sports-reference.com" + player_url)
+    pkreturn_stats = {}
     pk_stats = {}
     scoring_stats = {}
     rr_stats = {}
@@ -223,8 +277,9 @@ def player_stats(player_url,years_active,player_name,categories):
             scoring_stats = scoring(tr,scoring_stats)
         elif re.search('punt_yds_per_punt',tr) != None:
             pk_stats = punting_and_kicking(tr,pk_stats)
-        print pk_stats
-
+        elif re.search('kick_ret_yds_per_ret',tr) != None:
+            pkreturn_stats = punt_kick_returns(tr,pkreturn_stats)
+    print pkreturn_stats
 
 ### school = re.sub("[^a-zA-Z]+", "", raw_school.group(0))
 def strip_raw(raw):
@@ -245,8 +300,7 @@ def get_players(page,categories):
             player_url = strip_raw_url(url_result.group(0))
             player_name = strip_raw(name_result.group(0))
             #player_stats(player_url,years_active,player_name,categories)
-            player_stats("/cfb/players/jake-bailey-1.html",years_active,player_name,categories)
-
+            player_stats("/cfb/players/christian-mccaffrey-1.html",years_active,player_name,categories)
             #player_stats("/cfb/players/andrew-luck-1.html",years_active,player_name,categories)
             sys.exit(1)
     return players
