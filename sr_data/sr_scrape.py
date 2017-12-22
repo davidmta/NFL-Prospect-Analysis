@@ -9,25 +9,61 @@ def parse_year(tr):
     year = re.search('\>\d+\<\/a\>',str(tr))
     return strip_raw(year.group(0))
 
-def strip_conference(raw_conference):
+def strip_raw_info(raw_conference):
     left = raw_conference.find('>')
     right = raw_conference.find('<')
     return raw_conference[left+1:right]
 
-def conference_search(def_stats_entry,tr):
-    raw_conference = re.search('conferences/\w+/\d+\.html\"\>\w+\<\/a\>\<\/',str(tr))
-    conference = strip_conference(raw_conference.group(0))
-    def_stats_entry.append(conference)
-    return def_stats_entry
-
-def class_search(def_stats_entry, tr):
+def stats_search(pattern,def_stats_entry,tr):
+    raw_info = re.search(pattern,str(tr))
+    if raw_info == None:
+        def_stats_entry.append('')
+    else:
+        conference = strip_raw_info(raw_info.group(0))
+        def_stats_entry.append(conference)
     return def_stats_entry
 
 def parse_defense(tr,def_stats):
     year = parse_year(tr)
     def_stats_entry = []
-    def_stats_entry = conference_search(def_stats_entry,tr)
-    def_stats_entry = class_search(def_stats_entry, tr)
+    ## Conference
+    def_stats_entry = stats_search('conferences/\w+/\d+\.html\"\>\w+\<\/a\>\<\/',def_stats_entry,tr)
+    ## Class
+    def_stats_entry = stats_search('class\"\>\w+\<\/',def_stats_entry,tr)
+    ## Position Played
+    def_stats_entry = stats_search('\"pos\"\>\w+\<\/td',def_stats_entry,tr)
+    ## Games
+    def_stats_entry = stats_search('stat\=\"g\"\>\d+\<\/td',def_stats_entry,tr)
+    ## Solo Tackles
+    def_stats_entry = stats_search('\"tackles\_solo\"\>\d+\<\/td',def_stats_entry,tr)
+    ## Assisted Tackles
+    def_stats_entry = stats_search('\"tackles\_assists\"\>\d+\<\/td',def_stats_entry,tr)
+    ## Total Tackles
+    def_stats_entry = stats_search('\"tackles\_total\"\>\d+\<\/td',def_stats_entry,tr)
+    ## Tackles For Losses
+    def_stats_entry = stats_search('\"tackles\_loss\"\>\d+\.\d+\<\/td',def_stats_entry,tr)
+    ## Sacks
+    def_stats_entry = stats_search('\"sacks\"\>\d+\.\d+\<\/td',def_stats_entry,tr)
+    ## Interceptions
+    def_stats_entry = stats_search('\"def\_int\"\>\d+\<\/td',def_stats_entry,tr)
+    ## Interceptions Yards
+    def_stats_entry = stats_search('\"def\_int\_yds\"\>\d+\<\/td',def_stats_entry,tr)
+    ## Interception Return Yards Per Interception
+    def_stats_entry = stats_search('\"def\_int\_yds\_per\_int\"\>\d+\.\d+\<\/td',def_stats_entry,tr)
+    ## Interception Touchdowns
+    def_stats_entry = stats_search('\"def\_int\_td\"\>\d+\<\/td',def_stats_entry,tr)
+    ## Passes Defensed
+    def_stats_entry = stats_search('\"pass\_defended\"\>\d+\<\/td',def_stats_entry,tr)
+    ## Fumbles Recovered
+    def_stats_entry = stats_search('\"fumbles\_rec\"\>\d+\<\/td',def_stats_entry,tr)
+    ## Fumbles Recovery Return Yards
+    def_stats_entry = stats_search('\"fumbles\_rec\_yds\"\>\d+\<\/td',def_stats_entry,tr)
+    ## Fumble Recovery Return Touchdowns
+    def_stats_entry = stats_search('\"fumbles\_rec\_td\"\>\d+\<\/td',def_stats_entry,tr)
+    ## Fumbles Forced
+    def_stats_entry = stats_search('\"fumbles\_forced\"\>\d+\<\/td',def_stats_entry,tr)
+    def_stats[year] = def_stats_entry
+    print def_stats
     return def_stats;
 
 def player_stats(player_url,years_active,player_name,categories):
