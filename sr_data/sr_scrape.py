@@ -185,9 +185,32 @@ def scoring(tr,scoring_stats):
     scoring_stats[year] = scoring_stats_entry
     return scoring_stats
 
+def punting_and_kicking(tr,pk_stats):
+    year = int(parse_year(tr))
+    pk_stats_entry = []
+    
+    ## School
+    pk_stats_entry = stats_search('\"\/cfb\/schools\/\w+\/\d+\.html\"\>\w+\<\/a',pk_stats_entry,tr)
+    ## Conferences
+    pk_stats_entry = stats_search('\"\/cfb\/conferences\/.*?\/\d+\.html\"\>.*?\<\/a',pk_stats_entry,tr)
+    ## Class
+    pk_stats_entry = stats_search('class\"\s\>\w+\<\/',pk_stats_entry,tr)
+    ## Position Played
+    pk_stats_entry = stats_search('\"pos\"\s\>\w+\<\/td',pk_stats_entry,tr)
+    ## Games
+    pk_stats_entry = stats_search('stat\=\"g\"\s\>\d+\<\/td',pk_stats_entry,tr)
+
+    pk_stats[year] = pk_stats_entry
+    print tr
+    return pk_stats
+
 def player_stats(player_url,years_active,player_name,categories):
     page = requests.get("https://www.sports-reference.com" + player_url)
-    scoring_stats=rr_stats=pass_stats=def_stats={}
+    pk_stats = {}
+    scoring_stats = {}
+    rr_stats = {}
+    pass_stats = {}
+    def_stats = {}
     trs = re.findall('\<tr\s\>.*?\<\/tr\>',page.content)
     for tr in trs:
         if re.search('tackles_assists',tr) != None:
@@ -198,7 +221,9 @@ def player_stats(player_url,years_active,player_name,categories):
             rr_stats = rushing_receiving(tr,rr_stats)
         elif re.search('td_def_int',tr) != None:
             scoring_stats = scoring(tr,scoring_stats)
-            print scoring_stats
+        elif re.search('punt_yds_per_punt',tr) != None:
+            pk_stats = punting_and_kicking(tr,pk_stats)
+        print pk_stats
 
 
 ### school = re.sub("[^a-zA-Z]+", "", raw_school.group(0))
@@ -220,7 +245,9 @@ def get_players(page,categories):
             player_url = strip_raw_url(url_result.group(0))
             player_name = strip_raw(name_result.group(0))
             #player_stats(player_url,years_active,player_name,categories)
-            player_stats("/cfb/players/andrew-luck-1.html",years_active,player_name,categories)
+            player_stats("/cfb/players/jake-bailey-1.html",years_active,player_name,categories)
+
+            #player_stats("/cfb/players/andrew-luck-1.html",years_active,player_name,categories)
             sys.exit(1)
     return players
 
