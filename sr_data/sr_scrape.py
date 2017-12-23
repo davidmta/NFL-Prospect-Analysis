@@ -69,7 +69,7 @@ def parse_passing(tr,pass_stats):
     year = int(parse_year(tr))
     pass_stats_entry = []
     ## School
-    pass_stats_entry = stats_search('\"\/cfb\/schools\/\w+\/\d+\.html\"\>\w+\<\/a',pass_stats_entry,tr)
+    pass_stats_entry = stats_search('\"\/cfb\/schools\/.*?\/\d+\.html\"\>.*?\<\/a',pass_stats_entry,tr)
     ## Conferences
     pass_stats_entry = stats_search('\"\/cfb\/conferences\/.*?\/\d+\.html\"\>.*?\<\/a',pass_stats_entry,tr)
     ## Class
@@ -104,7 +104,7 @@ def rushing_receiving(tr,rr_stats):
     rr_stats_entry = []
     
     ## School
-    rr_stats_entry = stats_search('\"\/cfb\/schools\/\w+\/\d+\.html\"\>\w+\<\/a',rr_stats_entry,tr)
+    rr_stats_entry = stats_search('\"\/cfb\/schools\/.*?\/\d+\.html\"\>.*?\<\/a',rr_stats_entry,tr)
     ## Conferences
     rr_stats_entry = stats_search('\"\/cfb\/conferences\/.*?\/\d+\.html\"\>.*?\<\/a',rr_stats_entry,tr)
     ## Class
@@ -146,7 +146,7 @@ def scoring(tr,scoring_stats):
     scoring_stats_entry = []
     
     ## School
-    scoring_stats_entry = stats_search('\"\/cfb\/schools\/\w+\/\d+\.html\"\>\w+\<\/a',scoring_stats_entry,tr)
+    scoring_stats_entry = stats_search('\"\/cfb\/schools\/.*?\/\d+\.html\"\>.*?\<\/a',scoring_stats_entry,tr)
     ## Conferences
     scoring_stats_entry = stats_search('\"\/cfb\/conferences\/.*?\/\d+\.html\"\>.*?\<\/a',scoring_stats_entry,tr)
     ## Class
@@ -190,7 +190,7 @@ def punting_and_kicking(tr,pk_stats):
     pk_stats_entry = []
     
     ## School
-    pk_stats_entry = stats_search('\"\/cfb\/schools\/\w+\/\d+\.html\"\>\w+\<\/a',pk_stats_entry,tr)
+    pk_stats_entry = stats_search('\"\/cfb\/schools\/\w+\/.*?\.html\"\>.*?\<\/a',pk_stats_entry,tr)
     ## Conferences
     pk_stats_entry = stats_search('\"\/cfb\/conferences\/.*?\/\d+\.html\"\>.*?\<\/a',pk_stats_entry,tr)
     ## Class
@@ -228,7 +228,7 @@ def punt_kick_returns(tr,pkreturn_stats):
     pkreturns_stats_entry = []
     
     ## School
-    pkreturns_stats_entry = stats_search('\"\/cfb\/schools\/\w+\/\d+\.html\"\>\w+\<\/a',pkreturns_stats_entry,tr)
+    pkreturns_stats_entry = stats_search('\"\/cfb\/schools\/.*?\/\d+\.html\"\>.*?\<\/a',pkreturns_stats_entry,tr)
     ## Conferences
     pkreturns_stats_entry = stats_search('\"\/cfb\/conferences\/.*?\/\d+\.html\"\>.*?\<\/a',pkreturns_stats_entry,tr)
     ## Class
@@ -279,14 +279,17 @@ def player_stats(player_url,years_active,player_name,categories):
             pk_stats = punting_and_kicking(tr,pk_stats)
         elif re.search('kick_ret_yds_per_ret',tr) != None:
             pkreturn_stats = punt_kick_returns(tr,pkreturn_stats)
-    print pkreturn_stats
+    stats = [def_stats,pass_stats,rr_stats,scoring_stats,pk_stats,pkreturn_stats]
+    return stats
 
-### school = re.sub("[^a-zA-Z]+", "", raw_school.group(0))
 def strip_raw(raw):
     return raw[1:len(raw)-4]
 
 def strip_raw_url(raw_url):
     return raw_url[12:]
+
+def get_player_logs():
+
 
 def get_players(page,categories):
     soup = BeautifulSoup(page.content,"html.parser")
@@ -299,11 +302,10 @@ def get_players(page,categories):
             years_active = years_result.group(0)
             player_url = strip_raw_url(url_result.group(0))
             player_name = strip_raw(name_result.group(0))
-            #player_stats(player_url,years_active,player_name,categories)
-            player_stats("/cfb/players/christian-mccaffrey-1.html",years_active,player_name,categories)
-            #player_stats("/cfb/players/andrew-luck-1.html",years_active,player_name,categories)
-            sys.exit(1)
-    return players
+            print player_name
+            print player_url
+            stats = player_stats(player_url,years_active,player_name,categories)
+            #player_stats("/cfb/players/oliver-aaron-1.html",years_active,player_name,categories)
 
 
 def get_data(categories):
