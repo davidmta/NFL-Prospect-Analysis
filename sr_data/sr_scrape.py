@@ -257,6 +257,11 @@ def punt_kick_returns(tr,pkreturn_stats):
     pkreturn_stats[year] = pkreturns_stats_entry
     return pkreturn_stats
 
+def strip_position(raw_str):
+    start = raw_str.find(':')
+    return raw_str[start+2:len(raw_str)-5]
+
+
 def player_stats(player_url,years_active,player_name,categories):
     page = requests.get("https://www.sports-reference.com" + player_url)
     pkreturn_stats = {}
@@ -266,6 +271,19 @@ def player_stats(player_url,years_active,player_name,categories):
     pass_stats = {}
     def_stats = {}
     trs = re.findall('\<tr\s\>.*?\<\/tr\>',page.content)
+
+    ## Position
+    position_match = re.search('Position<\/strong\>\:\s\w+\s\<\/p\>',page.content)
+    position = strip_position(position_match.group(0))
+    ## Draft
+    draft_match = re.search('\<p\>\<strong\>Draft\:\<\/strong\>.*?\<\/p\>',page.content)
+    ## Height
+    height_match = re.search('itemprop\=\"height\"\>\d\-\d+\<\/span\>\,\&nbsp\;\<span',page.content)
+    height = strip_raw_info(height_match.group(0))
+    ## Weight
+    weight_match = re.search('itemprop\=\"weight\"\>\d+lb\<\/span\>\&nbsp',page.content)
+    weight = strip_raw_info(weight_match.group(0))
+ 
     for tr in trs:
         if re.search('tackles_assists',tr) != None:
             def_stats = parse_defense(tr,def_stats)
@@ -280,7 +298,7 @@ def player_stats(player_url,years_active,player_name,categories):
         elif re.search('kick_ret_yds_per_ret',tr) != None:
             pkreturn_stats = punt_kick_returns(tr,pkreturn_stats)
     stats = [def_stats,pass_stats,rr_stats,scoring_stats,pk_stats,pkreturn_stats]
-    return stats
+    return position,draft_match,height,weight,stats
 
 def strip_raw(raw):
     return raw[1:len(raw)-4]
@@ -288,7 +306,21 @@ def strip_raw(raw):
 def strip_raw_url(raw_url):
     return raw_url[12:]
 
-def get_player_logs():
+def get_player_splits(player_url):
+    splits_url = re.sub('.html','/splits/',player_url)
+    page = requests.get("https://www.sports-reference.com" + splits_url)
+    if page.status_code == 404:
+        return
+    soup = BeautifulSoup(page.content,"html.parser")
+    return soup.findAll('table')
+
+def get_player_logs(player_url):
+    gamelog_url = re.sub('.html','/gamelog/',player_url)
+    page = requests.get("https://www.sports-reference.com" + gamelog_url)
+    if page.status_code == 404:
+        return
+    soup = BeautifulSoup(page.content,"html.parser")
+    return soup.findAll('table')
 
 
 def get_players(page,categories):
@@ -298,14 +330,17 @@ def get_players(page,categories):
         url_result = re.search('\<p\>\<a href\=\"/cfb/players/\w+\-\w+\-\d.html',str(p))
         years_result = re.search('\(\d+\-\d+\)',str(p))
         name_result = re.search('\>\w+ \w+\<\/a\>',str(p))
-        if url_result and years_result and name_result != None:
+        college_result = re.search('\/cfb\/schools\/.*?\/\"\>.*?\<\/a\>',str(p))
+        if url_result and years_result and name_result and college_result != None:
             years_active = years_result.group(0)
-            player_url = strip_raw_url(url_result.group(0))
-            player_name = strip_raw(name_result.group(0))
-            print player_name
-            print player_url
-            stats = player_stats(player_url,years_active,player_name,categories)
-            #player_stats("/cfb/players/oliver-aaron-1.html",years_active,player_name,categories)
+            #player_url = strip_raw_url(url_result.group(0))
+            player_url = '/cfb/players/joey-bosa-1.html'
+            player_name = strip_raw_info(name_result.group(0))
+            college = strip_raw_info(college_result.group(0))
+            position,draft_match,height,weight,stats = player_stats(player_url,years_active,player_name,categories)
+            raw_player_logs = get_player_logs(player_url)
+            raw_player_splits = get_player_splits(player_url)
+            sys.exit(1)
 
 
 def get_data(categories):
@@ -319,15 +354,9 @@ def get_data(categories):
 #                return
 #            page_index = page_index + 1
 
-def create_CSV(categories):
-    sr_cfb_database = open('sr_cfb_database.csv', 'w')
-    with sr_cfb_database:
-        writer = csv.writer(sr_cfb_database)
-        writer.writerows(categories)
 
 def main():
     categories = [["PLAYER","COLLEGE","YEARS ACTIVE","POSITION","HEIGHT","WEIGHT","DRAFT","PASSING", "RUSHING AND RECEIVING", "PUNTING AND KICKING","DEFENSE AND FUMBLES","SCORING","PUNT AND KICK RETURNS"]]
-    create_CSV(categories)
     get_data(categories)
     return 0;
 
