@@ -4,6 +4,8 @@ from lxml.html.soupparser import fromstring
 import re
 import sys
 import csv
+import sqlite3 as lite
+
 
 def parse_year(text):
     year = re.search('\>\d+\<\/a\>',text)
@@ -262,7 +264,7 @@ def strip_position(raw_str):
     return raw_str[start+2:len(raw_str)-5]
 
 
-def player_stats(player_url,years_active,player_name,categories):
+def player_stats(player_url,years_active,player_name):
     page = requests.get("https://www.sports-reference.com" + player_url)
     pkreturn_stats = {}
     pk_stats = {}
@@ -323,7 +325,7 @@ def get_player_logs(player_url):
     return soup.findAll('table')
 
 
-def get_players(page,categories):
+def get_players(page):
     soup = BeautifulSoup(page.content,"html.parser")
     p_soup = soup.findAll('p')
     for p in p_soup:
@@ -337,16 +339,15 @@ def get_players(page,categories):
             player_url = '/cfb/players/joey-bosa-1.html'
             player_name = strip_raw_info(name_result.group(0))
             college = strip_raw_info(college_result.group(0))
-            position,draft_match,height,weight,stats = player_stats(player_url,years_active,player_name,categories)
+            position,draft_match,height,weight,stats = player_stats(player_url,years_active,player_name)
             raw_player_logs = get_player_logs(player_url)
             raw_player_splits = get_player_splits(player_url)
-            sys.exit(1)
 
 
-def get_data(categories):
+def get_data():
     for letter in range(ord('a'),ord('b')):
         page = requests.get("https://www.sports-reference.com/cfb/players/" + chr(letter)+"-index.html")
-        get_players(page,categories)
+        get_players(page)
         page_index = 2
 #        while(True):
 #            page = requests.get("https://www.sports-reference.com/cfb/players/" + chr(letter) + "-index-" + str(page_index) + ".html")
@@ -354,10 +355,22 @@ def get_data(categories):
 #                return
 #            page_index = page_index + 1
 
+def attempt_connection():
+    try:
+        con = lite.connect('sr_players_database.db')
+        return con
+    except Error as e:
+        print(e)
+
+def create_table(cur):
+    cur.execute("CREATE TABLE SR_PLAYERS(PLAYER TEXT,URL TEXT,COLLEGE TEXT,YEARS_ACTIVE TEXT,POSITION TEXT,HEIGHT TEXT,WEIGHT TEXT,DRAFT TEXT,DEFENSE_AND_FUMBLES TEXT,PASSING TEXT,RUSHING_AND_RECEIVING TEXT,SCORING TEXT,PUNTING_AND_KICKING TEXT,PUNT_AND_KICK_RETURNS TEXT)")
 
 def main():
-    categories = [["PLAYER","COLLEGE","YEARS ACTIVE","POSITION","HEIGHT","WEIGHT","DRAFT","PASSING", "RUSHING AND RECEIVING", "PUNTING AND KICKING","DEFENSE AND FUMBLES","SCORING","PUNT AND KICK RETURNS"]]
-    get_data(categories)
+    con = attempt_connection()
+    with con:
+        cur = con.cursor()
+    create_table(cur)
+#get_data()
     return 0;
 
 if __name__ == "__main__":
