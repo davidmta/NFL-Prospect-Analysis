@@ -276,15 +276,26 @@ def player_stats(player_url,years_active,player_name):
 
     ## Position
     position_match = re.search('Position<\/strong\>\:\s\w+\s\<\/p\>',page.content)
-    position = strip_position(position_match.group(0))
+    if position_match!=None:
+        position = strip_position(position_match.group(0))
+    else:
+        position = ""
     ## Draft
     draft_match = re.search('\<p\>\<strong\>Draft\:\<\/strong\>.*?\<\/p\>',page.content)
+    if draft_match == None:
+        draft_match = ""
     ## Height
     height_match = re.search('itemprop\=\"height\"\>\d\-\d+\<\/span\>\,\&nbsp\;\<span',page.content)
-    height = strip_raw_info(height_match.group(0))
+    if height_match!= None:
+        height = strip_raw_info(height_match.group(0))
+    else:
+        height = ""
     ## Weight
     weight_match = re.search('itemprop\=\"weight\"\>\d+lb\<\/span\>\&nbsp',page.content)
-    weight = strip_raw_info(weight_match.group(0))
+    if weight_match!= None:
+        weight = strip_raw_info(weight_match.group(0))
+    else:
+        weight = ""
  
     for tr in trs:
         if re.search('tackles_assists',tr) != None:
@@ -335,9 +346,10 @@ def get_players(page):
         college_result = re.search('\/cfb\/schools\/.*?\/\"\>.*?\<\/a\>',str(p))
         if url_result and years_result and name_result and college_result != None:
             years_active = years_result.group(0)
-            #player_url = strip_raw_url(url_result.group(0))
-            player_url = '/cfb/players/joey-bosa-1.html'
+            player_url = strip_raw_url(url_result.group(0))
             player_name = strip_raw_info(name_result.group(0))
+            print player_name
+            print player_url
             college = strip_raw_info(college_result.group(0))
             position,draft_match,height,weight,stats = player_stats(player_url,years_active,player_name)
             raw_player_logs = get_player_logs(player_url)
@@ -345,15 +357,16 @@ def get_players(page):
 
 
 def get_data():
-    for letter in range(ord('a'),ord('b')):
+    for letter in range(ord('y'),ord('z')):
         page = requests.get("https://www.sports-reference.com/cfb/players/" + chr(letter)+"-index.html")
         get_players(page)
         page_index = 2
-#        while(True):
-#            page = requests.get("https://www.sports-reference.com/cfb/players/" + chr(letter) + "-index-" + str(page_index) + ".html")
-#            if page.status_code == 404:
-#                return
-#            page_index = page_index + 1
+        while(True):
+            page = requests.get("https://www.sports-reference.com/cfb/players/" + chr(letter) + "-index-" + str(page_index) + ".html")
+            if page.status_code == 404:
+                return
+            get_players(page)
+            page_index = page_index + 1
 
 def attempt_connection():
     try:
@@ -369,8 +382,8 @@ def main():
     con = attempt_connection()
     with con:
         cur = con.cursor()
-    create_table(cur)
-#get_data()
+#    create_table(cur)
+    get_data()
     return 0;
 
 if __name__ == "__main__":
