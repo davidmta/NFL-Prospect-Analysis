@@ -344,12 +344,14 @@ def get_players(page,cur):
     for p in p_soup:
         url_result = re.search('\<p\>\<a href\=\"/cfb/players/\w+\-\w+\-\d.html',str(p))
         years_result = re.search('\(\d+\-\d+\)',str(p))
-        name_result = re.search('\>\w+ \w+\<\/a\>',str(p))
+        print str(p)
+        name_result = re.search('\.html\"\>.*?\s.*?\<\/a\>',str(p))
         college_result = re.search('\/cfb\/schools\/.*?\/\"\>.*?\<\/a\>',str(p))
         if url_result and years_result and name_result and college_result != None:
             years_active = years_result.group(0)
             player_url = strip_raw_url(url_result.group(0))
             player_name = strip_raw_info(name_result.group(0))
+            player_name = player_name.replace('\'','\'\'')
             print player_name
             print player_url
             college = strip_raw_info(college_result.group(0))
@@ -357,12 +359,10 @@ def get_players(page,cur):
             raw_player_logs = get_player_logs(player_url)
             raw_player_splits = get_player_splits(player_url)
             print stats[0]
-            cur.execute("INSERT INTO SR_PLAYERS VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s')" % (player_name,player_url,college,years_active,position,height,weight,draft,stats[0]))
-#cur.execute("INSERT INTO SR_PLAYERS VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')" % (player_name,player_url,college,years_active,position,height,weight,draft,stats[0],stats[1],stats[2],stats[3],stats[4],stats[5],str(raw_player_logs),str(raw_player_splits)))
-
+            cur.execute("INSERT INTO SR_PLAYERS VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')" % (player_name,player_url,college,years_active,position,height,weight,draft,stats[0],stats[1],stats[2],stats[3],stats[4],stats[5],str(raw_player_logs),str(raw_player_splits)))
 
 def get_data(cur):
-    for letter in range(ord('y'),ord('z')):
+    for letter in range(ord('a'),ord('b')):
         page = requests.get("https://www.sports-reference.com/cfb/players/" + chr(letter)+"-index.html")
         get_players(page,cur)
         page_index = 2
@@ -381,8 +381,7 @@ def attempt_connection():
         print(e)
 
 def create_table(cur):
-    #cur.execute("CREATE TABLE SR_PLAYERS(PLAYER TEXT,URL TEXT,COLLEGE TEXT,YEARS_ACTIVE TEXT,POSITION TEXT,HEIGHT TEXT,WEIGHT TEXT,DRAFT TEXT,DEFENSE_AND_FUMBLES TEXT,PASSING TEXT,RUSHING_AND_RECEIVING TEXT,SCORING TEXT,PUNTING_AND_KICKING TEXT,PUNT_AND_KICK_RETURNS TEXT,GAMELOGS TEXT,SPLITS TEXT)")
-    cur.execute("CREATE TABLE SR_PLAYERS(PLAYER TEXT,URL TEXT,COLLEGE TEXT,YEARS_ACTIVE TEXT,POSITION TEXT,HEIGHT TEXT,WEIGHT TEXT,DRAFT TEXT,DEFENSE_AND_FUMBLES TEXT)")
+    cur.execute("CREATE TABLE SR_PLAYERS(PLAYER TEXT,URL TEXT,COLLEGE TEXT,YEARS_ACTIVE TEXT,POSITION TEXT,HEIGHT TEXT,WEIGHT TEXT,DRAFT TEXT,DEFENSE_AND_FUMBLES TEXT,PASSING TEXT,RUSHING_AND_RECEIVING TEXT,SCORING TEXT,PUNTING_AND_KICKING TEXT,PUNT_AND_KICK_RETURNS TEXT,GAMELOGS TEXT,SPLITS TEXT)")
 def main():
     con = attempt_connection()
     with con:
