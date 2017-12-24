@@ -283,7 +283,9 @@ def player_stats(player_url,years_active,player_name):
     ## Draft
     draft_match = re.search('\<p\>\<strong\>Draft\:\<\/strong\>.*?\<\/p\>',page.content)
     if draft_match == None:
-        draft_match = ""
+        draft = ""
+    else:
+        draft = draft_match.group(0)
     ## Height
     height_match = re.search('itemprop\=\"height\"\>\d\-\d+\<\/span\>\,\&nbsp\;\<span',page.content)
     if height_match!= None:
@@ -310,8 +312,8 @@ def player_stats(player_url,years_active,player_name):
             pk_stats = punting_and_kicking(tr,pk_stats)
         elif re.search('kick_ret_yds_per_ret',tr) != None:
             pkreturn_stats = punt_kick_returns(tr,pkreturn_stats)
-    stats = [def_stats,pass_stats,rr_stats,scoring_stats,pk_stats,pkreturn_stats]
-    return position,draft_match,height,weight,stats
+    stats = [str(def_stats).replace('\'','\'\''),str(pass_stats).replace('\'','\'\''),str(rr_stats).replace('\'','\'\''),str(scoring_stats).replace('\'','\'\''),str(pk_stats).replace('\'','\'\''),str(pkreturn_stats).replace('\'','\'\'')]
+    return position,draft,height,weight,stats
 
 def strip_raw(raw):
     return raw[1:len(raw)-4]
@@ -336,7 +338,7 @@ def get_player_logs(player_url):
     return soup.findAll('table')
 
 
-def get_players(page):
+def get_players(page,cur):
     soup = BeautifulSoup(page.content,"html.parser")
     p_soup = soup.findAll('p')
     for p in p_soup:
@@ -351,21 +353,24 @@ def get_players(page):
             print player_name
             print player_url
             college = strip_raw_info(college_result.group(0))
-            position,draft_match,height,weight,stats = player_stats(player_url,years_active,player_name)
+            position,draft,height,weight,stats = player_stats(player_url,years_active,player_name)
             raw_player_logs = get_player_logs(player_url)
             raw_player_splits = get_player_splits(player_url)
+            print stats[0]
+            cur.execute("INSERT INTO SR_PLAYERS VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s')" % (player_name,player_url,college,years_active,position,height,weight,draft,stats[0]))
+#cur.execute("INSERT INTO SR_PLAYERS VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')" % (player_name,player_url,college,years_active,position,height,weight,draft,stats[0],stats[1],stats[2],stats[3],stats[4],stats[5],str(raw_player_logs),str(raw_player_splits)))
 
 
-def get_data():
+def get_data(cur):
     for letter in range(ord('y'),ord('z')):
         page = requests.get("https://www.sports-reference.com/cfb/players/" + chr(letter)+"-index.html")
-        get_players(page)
+        get_players(page,cur)
         page_index = 2
         while(True):
             page = requests.get("https://www.sports-reference.com/cfb/players/" + chr(letter) + "-index-" + str(page_index) + ".html")
             if page.status_code == 404:
                 return
-            get_players(page)
+            get_players(page,cur)
             page_index = page_index + 1
 
 def attempt_connection():
@@ -376,14 +381,14 @@ def attempt_connection():
         print(e)
 
 def create_table(cur):
-    cur.execute("CREATE TABLE SR_PLAYERS(PLAYER TEXT,URL TEXT,COLLEGE TEXT,YEARS_ACTIVE TEXT,POSITION TEXT,HEIGHT TEXT,WEIGHT TEXT,DRAFT TEXT,DEFENSE_AND_FUMBLES TEXT,PASSING TEXT,RUSHING_AND_RECEIVING TEXT,SCORING TEXT,PUNTING_AND_KICKING TEXT,PUNT_AND_KICK_RETURNS TEXT)")
-
+    #cur.execute("CREATE TABLE SR_PLAYERS(PLAYER TEXT,URL TEXT,COLLEGE TEXT,YEARS_ACTIVE TEXT,POSITION TEXT,HEIGHT TEXT,WEIGHT TEXT,DRAFT TEXT,DEFENSE_AND_FUMBLES TEXT,PASSING TEXT,RUSHING_AND_RECEIVING TEXT,SCORING TEXT,PUNTING_AND_KICKING TEXT,PUNT_AND_KICK_RETURNS TEXT,GAMELOGS TEXT,SPLITS TEXT)")
+    cur.execute("CREATE TABLE SR_PLAYERS(PLAYER TEXT,URL TEXT,COLLEGE TEXT,YEARS_ACTIVE TEXT,POSITION TEXT,HEIGHT TEXT,WEIGHT TEXT,DRAFT TEXT,DEFENSE_AND_FUMBLES TEXT)")
 def main():
     con = attempt_connection()
     with con:
         cur = con.cursor()
-#    create_table(cur)
-    get_data()
+        create_table(cur)
+        get_data(cur)
     return 0;
 
 if __name__ == "__main__":
