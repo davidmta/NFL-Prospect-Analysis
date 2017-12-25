@@ -344,7 +344,6 @@ def get_players(page,cur):
     for p in p_soup:
         url_result = re.search('\<p\>\<a href\=\"/cfb/players/\w+\-\w+\-\d.html',str(p))
         years_result = re.search('\(\d+\-\d+\)',str(p))
-        print str(p)
         name_result = re.search('\.html\"\>.*?\s.*?\<\/a\>',str(p))
         college_result = re.search('\/cfb\/schools\/.*?\/\"\>.*?\<\/a\>',str(p))
         if url_result and years_result and name_result and college_result != None:
@@ -358,7 +357,6 @@ def get_players(page,cur):
             position,draft,height,weight,stats = player_stats(player_url,years_active,player_name)
             raw_player_logs = get_player_logs(player_url)
             raw_player_splits = get_player_splits(player_url)
-            print stats[0]
             cur.execute("INSERT INTO SR_PLAYERS VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')" % (player_name,player_url,college,years_active,position,height,weight,draft,stats[0],stats[1],stats[2],stats[3],stats[4],stats[5],str(raw_player_logs),str(raw_player_splits)))
 
 def get_data(cur):
@@ -366,12 +364,12 @@ def get_data(cur):
         page = requests.get("https://www.sports-reference.com/cfb/players/" + chr(letter)+"-index.html")
         get_players(page,cur)
         page_index = 2
-        while(True):
-            page = requests.get("https://www.sports-reference.com/cfb/players/" + chr(letter) + "-index-" + str(page_index) + ".html")
-            if page.status_code == 404:
-                return
-            get_players(page,cur)
-            page_index = page_index + 1
+#        while(True):
+#            page = requests.get("https://www.sports-reference.com/cfb/players/" + chr(letter) + "-index-" + str(page_index) + ".html")
+#            if page.status_code == 404:
+#                return
+#            get_players(page,cur)
+#            page_index = page_index + 1
 
 def attempt_connection():
     try:
@@ -386,7 +384,7 @@ def main():
     con = attempt_connection()
     with con:
         cur = con.cursor()
-        create_table(cur)
+        #create_table(cur)
         get_data(cur)
     return 0;
 
