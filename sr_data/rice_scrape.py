@@ -275,7 +275,7 @@ def player_stats(player_url,years_active,player_name):
     trs = re.findall('\<tr\s\>.*?\<\/tr\>',page.content)
 
     ## Position
-    position_match = re.search('Position<\/strong\>\:\s.*?\s\<\/p\>',page.content)
+    position_match = re.search('Position<\/strong\>\:\s\w+\s\<\/p\>',page.content)
     if position_match!=None:
         position = strip_position(position_match.group(0))
     else:
@@ -359,21 +359,20 @@ def get_players(page,cur):
             raw_player_splits = get_player_splits(player_url)
             cur.execute("INSERT INTO SR_PLAYERS VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')" % (player_name,player_url,college,years_active,position,height,weight,draft,stats[0],stats[1],stats[2],stats[3],stats[4],stats[5],str(raw_player_logs),str(raw_player_splits)))
 
-def get_data(cur,letter,start,end):
-    if start == 1:
-        page = requests.get("https://www.sports-reference.com/cfb/players/" + letter + "-index" + ".html")
+def get_data(cur):
+    for letter in range(ord('a'),ord('z')):
+        page = requests.get("https://www.sports-reference.com/cfb/players/" + chr(letter) + "-index" + ".html")
         get_players(page,cur)
-    if end !=1:
-        page_index = start
-        while(page_index != end+1):
-            page = requests.get("https://www.sports-reference.com/cfb/players/" + letter + "-index-" + str(page_index) + ".html")
-            get_players(page,cur)
-            page_index = page_index + 1
+        page_index = 2
+        while(page.status_code != 404):
+            page = requests.get("https://www.sports-reference.com/cfb/players/" + chr(letter) + "-index-" + str(page_index) + ".html")
+            if page.status_code != 404:
+                get_players(page,cur)
+                page_index = page_index + 1
 
-
-def attempt_connection(letter,start,end):
+def attempt_connection():
     try:
-        con = lite.connect('sr_players_database'+ letter + str(start) + str(end) +'.db')
+        con = lite.connect('sr_players_database.db')
         return con
     except Error as e:
         print(e)
@@ -381,14 +380,11 @@ def attempt_connection(letter,start,end):
 def create_table(cur):
     cur.execute("CREATE TABLE SR_PLAYERS(PLAYER TEXT,URL TEXT,COLLEGE TEXT,YEARS_ACTIVE TEXT,POSITION TEXT,HEIGHT TEXT,WEIGHT TEXT,DRAFT TEXT,DEFENSE_AND_FUMBLES TEXT,PASSING TEXT,RUSHING_AND_RECEIVING TEXT,SCORING TEXT,PUNTING_AND_KICKING TEXT,PUNT_AND_KICK_RETURNS TEXT,GAMELOGS TEXT,SPLITS TEXT)")
 def main():
-    letter = sys.argv[1]
-    start = int(sys.argv[2])
-    end = int(sys.argv[3])
-    con = attempt_connection(letter,start,end)
+    con = attempt_connection()
     with con:
         cur = con.cursor()
         create_table(cur)
-        get_data(cur,letter,start,end)
+        get_data(cur)
     return 0;
 
 if __name__ == "__main__":
