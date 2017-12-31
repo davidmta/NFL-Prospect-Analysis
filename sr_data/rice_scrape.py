@@ -5,7 +5,7 @@ import re
 import sys
 import csv
 import sqlite3 as lite
-
+import time
 
 def parse_year(text):
     year = re.search('\>\d+\<\/a\>',text)
@@ -361,11 +361,19 @@ def get_players(page,cur):
 
 def get_data(cur):
     for letter in range(ord('a'),ord('z')):
-        page = requests.get("https://www.sports-reference.com/cfb/players/" + chr(letter) + "-index" + ".html")
+        try:
+            page = requests.get("https://www.sports-reference.com/cfb/players/" + chr(letter) + "-index" + ".html")
+        except:
+            time.sleep(5)
+            continue
         get_players(page,cur)
         page_index = 2
         while(page.status_code != 404):
-            page = requests.get("https://www.sports-reference.com/cfb/players/" + chr(letter) + "-index-" + str(page_index) + ".html")
+            try:
+                page = requests.get("https://www.sports-reference.com/cfb/players/" + chr(letter) + "-index-" + str(page_index) + ".html")
+            except:
+                time.sleep(5)
+                continue           
             if page.status_code != 404:
                 get_players(page,cur)
                 page_index = page_index + 1

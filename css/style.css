@@ -1,14 +1,24 @@
-body,html{
+body, html {
 	height: 100%;
 	margin: 0;
 	font-size: 16px;
-	font-family: "Lato",sans-serif;
+	font-family: "Lato", sans-serif;
 	font-weight: 400;
-	line-height: 1.8cm;
-	color:#666;
+	line-height: 1.8em;
+	color: #666;
 }
 
 .pimg1{
-	background-image:url('../img/sky.jpg');
+	background-image: url('../img/sky.jpg');
 	min-height: 100%;
+}
+
+.pimg2{
+	background-image: url('../img/sky.jpg');
+	min-height: 400px;
+}
+
+.pimg3{
+	background-image: url('../img/sky.jpg');
+	min-height: 400px;
 }
