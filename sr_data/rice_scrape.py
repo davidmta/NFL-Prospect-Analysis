@@ -361,19 +361,11 @@ def get_players(page,cur):
 
 def get_data(cur):
     for letter in range(ord('a'),ord('z')):
-        try:
-            page = requests.get("https://www.sports-reference.com/cfb/players/" + chr(letter) + "-index" + ".html")
-        except:
-            time.sleep(5)
-            continue
+        page = requests.get("https://www.sports-reference.com/cfb/players/" + chr(letter) + "-index" + ".html")
         get_players(page,cur)
         page_index = 2
         while(page.status_code != 404):
-            try:
-                page = requests.get("https://www.sports-reference.com/cfb/players/" + chr(letter) + "-index-" + str(page_index) + ".html")
-            except:
-                time.sleep(5)
-                continue           
+            page = requests.get("https://www.sports-reference.com/cfb/players/" + chr(letter) + "-index-" + str(page_index) + ".html")
             if page.status_code != 404:
                 get_players(page,cur)
                 page_index = page_index + 1
