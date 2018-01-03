@@ -5,7 +5,9 @@ import re
 import sys
 import csv
 import sqlite3 as lite
+import os
 
+FILE_NAME = 'sr_players_database.db'
 
 def parse_year(text):
     year = re.search('\>\d+\<\/a\>',text)
@@ -360,31 +362,33 @@ def get_players(page,cur):
             cur.execute("INSERT INTO SR_PLAYERS VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')" % (player_name,player_url,college,years_active,position,height,weight,draft,stats[0],stats[1],stats[2],stats[3],stats[4],stats[5],str(raw_player_logs),str(raw_player_splits)))
 
 def get_data(cur):
-    for letter in range(ord('a'),ord('b')):
-        page_index = 2
+    for letter in range(ord('a'),ord('z')):
         page = requests.get("https://www.sports-reference.com/cfb/players/" + chr(letter) + "-index" + ".html")
         get_players(page,cur)
-        while(True):
-            page = requests.get("https://www.sports-reference.com/cfb/players/" + chr(letter) + "-index" + str(page_index) + ".html")
-            if page.status_code == 404:
-                return
-            get_players(page,cur)
-            page_index = page_index + 1
+        page_index = 2
+        while(page.status_code != 404):
+            page = requests.get("https://www.sports-reference.com/cfb/players/" + chr(letter) + "-index-" + str(page_index) + ".html")
+            if page.status_code != 404:
+                get_players(page,cur)
+                page_index = page_index + 1
 
 def attempt_connection():
     try:
-        con = lite.connect('sr_players_database.db')
+        con = lite.connect(FILE_NAME)
         return con
     except Error as e:
         print(e)
 
 def create_table(cur):
     cur.execute("CREATE TABLE SR_PLAYERS(PLAYER TEXT,URL TEXT,COLLEGE TEXT,YEARS_ACTIVE TEXT,POSITION TEXT,HEIGHT TEXT,WEIGHT TEXT,DRAFT TEXT,DEFENSE_AND_FUMBLES TEXT,PASSING TEXT,RUSHING_AND_RECEIVING TEXT,SCORING TEXT,PUNTING_AND_KICKING TEXT,PUNT_AND_KICK_RETURNS TEXT,GAMELOGS TEXT,SPLITS TEXT)")
+
 def main():
     con = attempt_connection()
     with con:
         cur = con.cursor()
-        #create_table(cur)
+        db_path = os.getcwd() + "/" + FILE_NAME
+        if os.path.isfile(db_path) is False: 
+            create_table(cur)
         get_data(cur)
     return 0;
 
