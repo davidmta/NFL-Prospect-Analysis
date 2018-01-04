@@ -9,7 +9,7 @@ import os
 import time
 import httplib
 from stats_scrape import parse_defense,parse_passing,rushing_receiving,punting_and_kicking,scoring,punt_kick_returns,strip_raw_info
-FILE_NAME = 'sr_players_database.db'
+
 
 def strip_position(raw_str):
     start = raw_str.find(':')
@@ -99,13 +99,14 @@ def get_players_stats(page,cur):
             player_name = strip_raw_info(name_result.group(0))
             player_name = standardize_for_SQL(player_name)
             college = strip_raw_info(college_result.group(0))
+            college = standardize_for_SQL(player_name)
             print player_name
             print player_url
             position,draft,height,weight,stats = sift_for_stats(player_url,years_active,player_name)
             cur.execute("INSERT INTO SR_PLAYERS VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')" % (player_name,player_url,college,years_active,position,height,weight,draft,stats[0],stats[1],stats[2],stats[3],stats[4],stats[5],"",""))
                         
-def get_data(cur):
-    for letter in range(ord('a'),ord('z')):
+def get_data(cur,start,end):
+    for letter in range(ord(start),ord(end)+1):
         page = requests.get("https://www.sports-reference.com/cfb/players/" + chr(letter) + "-index" + ".html")
         get_players_stats(page,cur)
         page_index = 2
@@ -115,9 +116,9 @@ def get_data(cur):
                 get_players_stats(page,cur)
                 page_index = page_index + 1
 
-def attempt_connection():
+def attempt_connection(start,end):
     try:
-        con = lite.connect(FILE_NAME)
+        con = lite.connect('sr_players_database_' + start + '_' + end + '.db')
         return con
     except Error as e:
         print(e)
@@ -126,12 +127,14 @@ def create_table(cur):
     cur.execute("CREATE TABLE SR_PLAYERS(PLAYER TEXT,URL TEXT,COLLEGE TEXT,YEARS_ACTIVE TEXT,POSITION TEXT,HEIGHT TEXT,WEIGHT TEXT,DRAFT TEXT,DEFENSE_AND_FUMBLES TEXT,PASSING TEXT,RUSHING_AND_RECEIVING TEXT,SCORING TEXT,PUNTING_AND_KICKING TEXT,PUNT_AND_KICK_RETURNS TEXT,GAMELOGS TEXT,SPLITS TEXT)")
 
 def main():
-    con = attempt_connection()
+    start = sys.argv[1]
+    end = sys.argv[2] 
+    con = attempt_connection(start,end)
     with con:
         cur = con.cursor()
         create_table(cur)
-        get_data(cur)
-    return 0;
+        get_data(cur,start,end)
+    # return 0;
 
 if __name__ == "__main__":
     main()
