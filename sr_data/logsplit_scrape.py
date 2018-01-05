@@ -22,6 +22,22 @@ def attempt_connection():
     except Error as e:
         print(e)
 
+def sift_split(stat):
+    raw_splitstats = re.findall('data-stat=\"\w+\">.*?\<',stat)
+    print raw_splitstats
+
+def cull_splits_table(splits_table):
+    gamelog_table_str = str(splits_table)
+    indexes = [(m.start(0), m.end(0)) for m in re.finditer("data\-stat\=\"split\_value\"\>", gamelog_table_str)]
+    for i in range(0,len(indexes)):
+        index = indexes[i]
+        date = gamelog_table_str[index[0]+1:index[1]-1]
+        if i == len(indexes)-1:
+            stat = gamelog_table_str[index[1]:]
+        else:     
+            stat = gamelog_table_str[index[1]:indexes[i+1][0]]
+        sift_split(stat)
+
 def sift_log(stat):
     ## School
     school = re.search("data-stat\=\"school\_name\"\>.*?\<\/",stat)
@@ -32,7 +48,6 @@ def sift_log(stat):
     ## Stats
     raw_logstats = re.findall('data-stat=\"\w+\">.*?\<',stat)
     raw_logstats = raw_logstats[3:len(raw_logstats)]
-
 
 def cull_gamelog_table(gamelog_table):
     gamelog_table_str = str(gamelog_table)
@@ -46,10 +61,6 @@ def cull_gamelog_table(gamelog_table):
             stat = gamelog_table_str[index[1]:indexes[i+1][0]]
         sift_log(stat)
 
-def cull_splits_table(splits_table):
-    print splits_table
-
-
 def main():
     con = attempt_connection()
     with con:
@@ -60,6 +71,7 @@ def main():
             gamelog_table = get_raw_logsplits("gamelog", player_url[0])
             cull_gamelog_table(gamelog_table)
             splits_table = get_raw_logsplits("splits", player_url[0])
+            print player_url
             cull_splits_table(splits_table)
             sys.exit(1)
             #cull_gamelog_table(splits_table)
