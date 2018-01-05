@@ -42,15 +42,19 @@ def get_identifying_stats(page_content):
     return position, draft, height, weight
 
 def sift_for_stats(player_url,years_active,player_name):
-    page = requests.get("https://www.sports-reference.com" + player_url)
+    try:
+        page = requests.get("https://www.sports-reference.com" + player_url)
+    except:
+        return "","","","",["","","","","",""]
+
+    position, draft, height, weight = get_identifying_stats(page.content)
+
     pkreturn_stats = {}
     pk_stats = {}
     scoring_stats = {}
     rr_stats = {}
     pass_stats = {}
     def_stats = {}
-    position, draft, height, weight = get_identifying_stats(page.content)
-
     trs = re.findall('\<tr\s\>.*?\<\/tr\>',page.content)
     for tr in trs:
         if re.search('tackles_assists',tr) != None:
