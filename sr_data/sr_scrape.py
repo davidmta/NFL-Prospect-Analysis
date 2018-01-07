@@ -28,7 +28,7 @@ def identifying_stats_match(pattern,page_content):
 
 def get_identifying_stats(page_content):
     ## Position
-    position = identifying_stats_match('Position<\/strong\>\:\s\w+\s\<\/p\>',page_content)
+    position = identifying_stats_match('Position<\/strong\>\:\s.*?\s\<\/p\>',page_content)
     position = strip_position(position)
     ## Draft
     draft = identifying_stats_match('\<p\>\<strong\>Draft\:\<\/strong\>.*?\<\/p\>',page_content)
