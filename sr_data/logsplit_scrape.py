@@ -38,8 +38,7 @@ def parse_rawstr(raw_str,pattern):
     return str_dict
  
 def sift_split(stat):
-    raw_splitstats = re.findall('data-stat=\".*?\">.*?\<',stat)
-    print raw_splitstats
+    raw_splitstats = re.findall('data-stat=\".*?\">.*?\<',stat)[:-1]
     return stat
 
 def cull_splits_table(splits_table):
@@ -48,12 +47,9 @@ def cull_splits_table(splits_table):
         category_data = category_dict[category]
         data_dict = parse_rawstr(category_data,"data-stat=\"split_value\">.*?</td>")
         for data in data_dict:
-            print data
             data_dict[data] = sift_split(data_dict[data])
         category_dict[category] = data_dict
         sys.exit(1)
-
-        # sift_split(stat)
 
 def sift_log(stat):
     ## School
