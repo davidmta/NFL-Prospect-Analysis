@@ -7,6 +7,9 @@ import csv
 import sqlite3 as lite
 import os
 
+def bracketstrip(str):
+    return str.replace("><","")
+
 def strip_raw(raw):
     return raw[1:len(raw)-4]
 

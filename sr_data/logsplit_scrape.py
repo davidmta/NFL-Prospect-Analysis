@@ -6,6 +6,7 @@ import sys
 import csv
 import sqlite3 as lite
 import os
+from stats_scrape import strip_raw_info,bracketstrip
 
 def get_raw_logsplits(stats_type,player_url):
     url = re.sub('.html','/' + stats_type + '/',player_url)
@@ -23,24 +24,35 @@ def attempt_connection():
         print(e)
 
 def parse_rawstr(raw_str,pattern):
-    str_list = []
+    str_dict = {}
     indexes = [(m.start(0), m.end(0)) for m in re.finditer(pattern, raw_str)]
     for i in range(0,len(indexes)):
         index = indexes[i]
-        date = raw_str[index[0]+1:index[1]-1]
+        backetless_str = bracketstrip(raw_str[index[0]+1:index[1]-1])
+        category = strip_raw_info(backetless_str)
         if i == len(indexes)-1:
             processed_str = raw_str[index[1]:]
         else:     
-            processed_str = raw_str[index[1]:indexes[i+1][0]]
-        str_list.append(processed_str)
-    return str_list
-
+            processed_str = raw_str[index[1]:indexes[i+1][0]] 
+        str_dict[category] = processed_str
+    return str_dict
+ 
 def sift_split(stat):
     raw_splitstats = re.findall('data-stat=\".*?\">.*?\<',stat)
-
+    print raw_splitstats
+    return stat
 
 def cull_splits_table(splits_table):
-    str_list = parse_rawstr(str(gamelog_table),"data\-stat\=\"split\_id\" scope\=\"row\"\>\w+<\/th\>")
+    category_dict = parse_rawstr(str(splits_table),"data\-stat\=\"split\_id\" scope\=\"row\"\>\w+<\/th\>")
+    for category in category_dict:
+        category_data = category_dict[category]
+        data_dict = parse_rawstr(category_data,"data-stat=\"split_value\">.*?</td>")
+        for data in data_dict:
+            print data
+            data_dict[data] = sift_split(data_dict[data])
+        category_dict[category] = data_dict
+        sys.exit(1)
+
         # sift_split(stat)
 
 def sift_log(stat):
@@ -53,12 +65,11 @@ def sift_log(stat):
     ## Stats
     raw_logstats = re.findall('data-stat=\"\w+\">.*?\<',stat)
     raw_logstats = raw_logstats[3:len(raw_logstats)]
-    print raw_logstats
 
 def cull_gamelog_table(gamelog_table):
-    str_list = parse_rawstr(str(gamelog_table),"\>\d\d\d\d\-\d\d\-\d\d\<")
-    for string in str_list:
-        sift_log(string)
+    log_dict = parse_rawstr(str(gamelog_table),"\>\d\d\d\d\-\d\d\-\d\d\<")
+    for date in log_dict:
+        sift_log(log_dict[date])
 
 def main():
     con = attempt_connection()
@@ -72,7 +83,6 @@ def main():
             splits_table = get_raw_logsplits("splits", player_url[0])
             cull_splits_table(splits_table)
             sys.exit(1)
-            #cull_gamelog_table(splits_table)
 
     return 0;
 
