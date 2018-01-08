@@ -13,10 +13,15 @@ def bracketstrip(str):
 def strip_raw(raw):
     return raw[1:len(raw)-4]
 
-def strip_raw_info(raw_conference):
-    left = raw_conference.find('>')
-    right = raw_conference.find('<')
-    return raw_conference[left+1:right]
+def strip_raw_info(string):
+    left = string.find('>')
+    right = string.find('<')
+    return string[left+1:right]
+
+def strip_quotes(string):
+    left = string.find('\"')
+    right = string.rfind('\"')
+    return string[left+1:right]   
 
 def parse_year(text):
     year = re.search('\>\d+\<\/a\>',text)
@@ -30,6 +35,42 @@ def stats_search(pattern,def_stats_entry,tr):
         conference = strip_raw_info(raw_info.group(0))
         def_stats_entry.append(conference)
     return def_stats_entry
+
+def sift_log(stat):
+    stats_dict = {}
+    ## School
+    school = re.search("data-stat\=\"school\_name\"\>.*?\<\/",stat)
+    school = bracketstrip(school.group(0))
+    school = strip_raw_info(school)
+    stats_dict["School"] = school
+    ## Game Location
+    game_location = re.search("data\-stat\=\"game\_location\"\>.*?\<\/",stat)
+    game_location = strip_raw_info(game_location.group(0))
+    stats_dict["Game Location"] = game_location
+    ## Opponent Name
+    opponent_name = re.search("data-stat\=\"opp_name\">.*?\<\/a\>",stat)
+    opponent_name = bracketstrip(opponent_name.group(0))
+    opponent_name = strip_raw_info(opponent_name)
+    stats_dict["Opponent"] = opponent_name
+    ## Stats
+    raw_logstats = re.findall('data-stat=\"\w+\">.*?\<',stat)
+    raw_logstats = raw_logstats[3:len(raw_logstats)]
+
+    for raw in raw_logstats:
+        split_category = strip_quotes(raw)
+        split_data = strip_raw_info(raw)
+        stats_dict[split_category] = split_data
+
+    return stats_dict
+
+def sift_split(stat):
+    split_dict = {}
+    raw_splitstats = re.findall('data-stat=\"\w+\">[^A-z].*?\<',stat)[:-1]
+    for raw_split in raw_splitstats:
+        split_category = strip_quotes(raw_split)
+        split_data = strip_raw_info(raw_split)
+        split_dict[split_category] = split_data
+    return split_dict
 
 def parse_defense(tr,def_stats):
     year = int(parse_year(tr))
