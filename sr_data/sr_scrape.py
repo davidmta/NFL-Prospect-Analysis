@@ -8,7 +8,7 @@ import sqlite3 as lite
 import os
 import time
 import httplib
-from stats_scrape import parse_defense,parse_passing,rushing_receiving,punting_and_kicking,scoring,punt_kick_returns,strip_raw_info
+from stats_scrape import parse_defense,parse_passing,rushing_receiving,punting_and_kicking,scoring,punt_kick_returns,strip_raw_info,standardize_for_SQL
 
 
 def strip_position(raw_str):
@@ -81,9 +81,6 @@ def sift_for_stats(player_url,years_active,player_name):
 def strip_raw_url(raw_url):
     return raw_url[12:]
 
-def standardize_for_SQL(raw):
-    return raw.replace('\'','\'\'')
-
 def get_identification(p_str):
     url_result = re.search('\<p\>\<a href\=\"/cfb/players/\w+\-\w+\-\d.html',p_str)
     years_result = re.search('\(\d+\-\d+\)',p_str)
@@ -138,7 +135,7 @@ def main():
         cur = con.cursor()
         create_table(cur)
         get_data(cur,start,end)
-    # return 0;
+    return 0;
 
 if __name__ == "__main__":
     main()

@@ -7,6 +7,9 @@ import csv
 import sqlite3 as lite
 import os
 
+def standardize_for_SQL(raw):
+    return raw.replace('\'','\'\'')
+
 def bracketstrip(str):
     return str.replace("><","")
 
