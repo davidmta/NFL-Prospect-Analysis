@@ -88,7 +88,7 @@ def get_identification(p_str):
     url_result = re.search('\<p\>\<a href\=\"/cfb/players/\w+\-\w+\-\d.html',p_str)
     years_result = re.search('\(\d+\-\d+\)',p_str)
     name_result = re.search('\.html\"\>.*?\s.*?\<\/a\>',p_str)
-    college_result = re.search('\/cfb\/schools\/.*?\/\"\>.*?\<\/a\>',p_str)
+    college_result = re.search('/cfb/schools/.*?/">.*?</a>',p_str)
     return url_result, years_result, name_result, college_result
 
 def get_players_stats(page,cur):
@@ -103,8 +103,8 @@ def get_players_stats(page,cur):
             player_name = strip_raw_info(name_result.group(0))
             player_name = standardize_for_SQL(player_name)
             college = strip_raw_info(college_result.group(0))
-            college = standardize_for_SQL(player_name)
-            print player_name
+            college = standardize_for_SQL(college)
+            print player_name + ", " + college
             print player_url
             position,draft,height,weight,stats = sift_for_stats(player_url,years_active,player_name)
             cur.execute("INSERT INTO SR_PLAYERS VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')" % (player_name,player_url,college,years_active,position,height,weight,draft,stats[0],stats[1],stats[2],stats[3],stats[4],stats[5],"",""))

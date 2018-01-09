@@ -60,16 +60,28 @@ def main():
         cur = con.cursor()
         cur.execute("SELECT URL FROM SR_PLAYERS")
         url_list = cur.fetchall()
-        for player_url in url_list:
-            try:
-                gamelog_table = get_raw_logsplits("gamelog", player_url[0])
-                splits_table = get_raw_logsplits("splits", player_url[0])
-                log_dict = cull_gamelog_table(gamelog_table)
-                splits_dict = cull_splits_table(splits_table)
-                cur.execute("""UPDATE SR_PLAYERS SET GAMELOGS='%s'""",(log_dict))
-                cur.execute("""UPDATE SR_PLAYERS SET SPLITS='%s'""",(splits_dict))
-            except:
-                print "ERROR"
+
+        player_url = url_list[0]
+        gamelog_table = get_raw_logsplits("gamelog", player_url[0])
+        splits_table = get_raw_logsplits("splits", player_url[0])
+        log_dict = cull_gamelog_table(gamelog_table)
+        splits_dict = cull_splits_table(splits_table)
+
+        print player_url[0]
+        cur.execute("""UPDATE SR_PLAYERS SET GAMELOGS='%s' WHERE URL = '%s'""" % (log_dict,"/cfb/players/neli-aasa-1.html"))
+        # cur.execute("""UPDATE SR_PLAYERS SET SPLITS='%s'""",(splits_dict))
+
+
+        # for player_url in url_list:
+        #     try:
+        #         gamelog_table = get_raw_logsplits("gamelog", player_url[0])
+        #         splits_table = get_raw_logsplits("splits", player_url[0])
+        #         log_dict = cull_gamelog_table(gamelog_table)
+        #         splits_dict = cull_splits_table(splits_table)
+        #         cur.execute("""UPDATE SR_PLAYERS SET GAMELOGS='%s'""",(log_dict))
+        #         cur.execute("""UPDATE SR_PLAYERS SET SPLITS='%s'""",(splits_dict))
+        #     except:
+        #         print "ERROR"
     return 0;
 
 if __name__ == "__main__":
