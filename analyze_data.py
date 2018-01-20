@@ -2,6 +2,8 @@ import sqlite3
 from sqlite3 import Error
 import re
 import pandas as pd
+import matplotlib.pyplot as plt
+import random
 
 ### ----------------------------------------------------------------------------------------------------
 ### CLUSTER_HW
@@ -17,7 +19,8 @@ def parse_hw(cur):
 	cur.execute("SELECT WEIGHT FROM SR_PLAYERS")
 	weight_all_raw = cur.fetchall()
 	stats_all = clean_all(height_all_raw,weight_all_raw)
-	print stats_all
+	stats_all.plot(kind='scatter', x='Height', y='Weight');
+	plt.show()
 
 def clean_all(height_all_raw,weight_all_raw):
 	stats_all = []
@@ -26,11 +29,10 @@ def clean_all(height_all_raw,weight_all_raw):
 			weight_entry = convert_weight(weight_all_raw[i])
 			height_entry = convert_height(height_all_raw[i])
 			stats_all.append([height_entry,weight_entry])
-	stats_all = pd.DataFrame(stats_all)		
-	return stats_all
+	return pd.DataFrame(stats_all,columns=['Height', 'Weight'])
 
 def convert_weight(weight):
-	return re.sub("lb","",weight[0])
+	return int(re.sub("lb","",weight[0]))
 
 def convert_height(height):
 	height = height[0].split("-")
