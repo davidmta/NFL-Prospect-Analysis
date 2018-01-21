@@ -3,7 +3,7 @@ from sqlite3 import Error
 import re
 import pandas as pd
 import matplotlib.pyplot as plt
-import random
+import seaborn as sns
 
 ### ----------------------------------------------------------------------------------------------------
 ### CLUSTER_HW
@@ -11,7 +11,6 @@ import random
 def cluster_hw(conn):
 	cur = conn.cursor()
 	parse_hw(cur)
-
 
 def parse_hw(cur):
 	#plot_all(cur)
@@ -37,7 +36,7 @@ def scatter(cur,position):
 	scatterplot_position(height_raw,weight_raw)
 
 def plot_all_group(cur):
-	scatter(cur,'G')
+	scatter(cur,'T')
 	positions = ['QB','RB','WR','TE','T','OL','G','FB','LB','DT','DE','DL','DB','CB','S','P','PK']
 
 def plot_all():
