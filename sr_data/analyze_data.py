@@ -14,6 +14,33 @@ def cluster_hw(conn):
 
 
 def parse_hw(cur):
+	#plot_all(cur)
+	plot_all_group(cur)
+
+def scatterplot_position(height_raw,weight_raw):
+	data = []
+	for i in range(0,len(weight_raw)):
+		if weight_raw[i][0]:
+			print height_raw[i][0]
+			weight_entry = convert_weight(weight_raw[i])
+			height_entry = convert_height(height_raw[i])
+			data.append([height_entry,weight_entry])
+	df = pd.DataFrame(data,columns=['Height', 'Weight'])
+	df.plot(kind='scatter', x='Height', y='Weight');
+	plt.show()
+
+def scatter(cur,position):		
+	cur.execute("SELECT HEIGHT FROM SR_PLAYERS WHERE POSITION = '" + position + "'")	
+	height_raw = cur.fetchall()
+	cur.execute("SELECT WEIGHT FROM SR_PLAYERS WHERE POSITION = '" + position + "'")	
+	weight_raw = cur.fetchall()
+	scatterplot_position(height_raw,weight_raw)
+
+def plot_all_group(cur):
+	scatter(cur,'G')
+	positions = ['QB','RB','WR','TE','T','OL','G','FB','LB','DT','DE','DL','DB','CB','S','P','PK']
+
+def plot_all():
 	cur.execute("SELECT HEIGHT FROM SR_PLAYERS")
 	height_all_raw = cur.fetchall()
 	cur.execute("SELECT WEIGHT FROM SR_PLAYERS")
@@ -25,7 +52,7 @@ def parse_hw(cur):
 def clean_all(height_all_raw,weight_all_raw):
 	stats_all = []
 	for i in range(0,113877):
-		if height_all_raw[i][0] != "":
+		if height_all_raw[i][0]:
 			weight_entry = convert_weight(weight_all_raw[i])
 			height_entry = convert_height(height_all_raw[i])
 			stats_all.append([height_entry,weight_entry])
