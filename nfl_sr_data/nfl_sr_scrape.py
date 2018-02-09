@@ -10,13 +10,14 @@ def gather_stats(player_url):
 	page = requests.get(player_url)
 	p_soup = BeautifulSoup(page.content,"html.parser")
 	for p in p_soup:
-		college_result = re.search('\<a href\=\"\/schools\/.*?\/\"\>.*?\<\/a\>',str(p))
-		height_result = re.search('\"height\"\>.*?\<\/',str(p))
-		weight_result = re.search('\"weight\"\>.*?\<\/',str(p))
-		birthday_result = re.search('data\-birth\=\"\d+\-\d+\-\d+\"',str(p))
-		birthplace_result = re.search('.*?\<a href\=\"\/friv\/birthplaces\.cgi\?country\=.*?\"',str(p))
-		high_school_result = re.search('hs\_state\=.*?\"\>',str(p))
-		if college_result and birthplace_result!= None:
+		p_str = str(p)
+		college_result = re.search('\<a href\=\"\/schools\/.*?\/\"\>.*?\<\/a\>',p_str)
+		height_result = re.search('\"height\"\>.*?\<\/',p_str)
+		weight_result = re.search('\"weight\"\>.*?\<\/',p_str)
+		birthday_result = re.search('data\-birth\=\"\d+\-\d+\-\d+\"',p_str)
+		birthplace_result = re.search('.*?\<a href\=\"\/friv\/birthplaces\.cgi\?country\=.*?\"',p_str)
+		high_school_result = re.search('hs\_state\=.*?\"\>',p_str)
+		if college_result and height_result and height_result and birthday_result and high_school_result and birthplace_result!= None:
 			college = college_result.group(0)
 			print high_school_result.group(0)
 	sys.exit(1)
