@@ -6,7 +6,7 @@ import sys
 import csv
 import sqlite3 as lite
 import os
-from stats_scrape import strip_raw_info,bracketstrip,strip_quotes,sift_log,sift_split,standardize_for_SQL
+from scrape_support import strip_raw_info,bracketstrip,strip_quotes,sift_log,sift_split,standardize_for_SQL
 
 
 def attempt_connection():

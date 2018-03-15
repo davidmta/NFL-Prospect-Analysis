@@ -8,7 +8,7 @@ import sqlite3 as lite
 import os
 import time
 import httplib
-from stats_scrape import parse_defense,parse_passing,rushing_receiving,punting_and_kicking,scoring,punt_kick_returns,strip_raw_info,standardize_for_SQL
+from scrape_support import parse_defense,parse_passing,rushing_receiving,punting_and_kicking,scoring,punt_kick_returns,strip_raw_info,standardize_for_SQL
 
 
 def strip_position(raw_str):
@@ -101,6 +101,8 @@ def get_players_stats(page,cur):
             player_name = standardize_for_SQL(player_name)
             college = strip_raw_info(college_result.group(0))
             college = standardize_for_SQL(college)
+
+            ## Consule output
             print player_name + ", " + college
             print player_url
             position,draft,height,weight,stats = sift_for_stats(player_url,years_active,player_name)
