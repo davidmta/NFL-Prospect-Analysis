@@ -30,10 +30,10 @@ def store_profile(profile_entry,personal_info,stats_info,i):
             profile_entry.append(entry)
         elif entry_str == '<font color="#000000" face="Verdana,Geneva,Arial,Helvetica,sans-serif" size="-2"></font>':
             profile_entry.append("NULL")
-    profile_entry = determine_participation(link_str,stats_info,profile_entry,i)
+    profile_entry = determine_combine_participation(link_str,stats_info,profile_entry,i)
     return profile_entry
 
-def determine_participation(link_str,stats_info,profile_entry,i):
+def determine_combine_participation(link_str,stats_info,profile_entry,i):
     if link_str == '<font color="#BA303E" face="Verdana,Geneva,Arial,Helvetica,sans-serif" size="-2"><strong></strong></font>' and stats_info[i-1].__str__() == '<font color="#000000" face="Verdana,Geneva,Arial,Helvetica,sans-serif" size="-2"><strong>Combine Invite:</strong></font>':
         profile_entry.append("No")
     elif link_str == '<font color="#BA303E" face="Verdana,Geneva,Arial,Helvetica,sans-serif" size="-2"><strong>Yes</strong></font>':
@@ -55,18 +55,32 @@ def parse_personal(personal_info,profile_entry,url):
     print url
     return profile_entry
 
-def store_data(soup,cur):
+def get_final_url(url,year):
+    page = requests.get(url)
+    soup = BeautifulSoup(page.content, 'html.parser')
+    position_search = re.search('Position\:\<\/strong\> \<a href\="http://www.draftscout.com/members/ratings/players.php\?genpos\=\w+', str(soup))  
+    position = position_search.group(0)[-2:] 
+    return(url+"&draftyear="+str(year)+"&genpos="+position)
+
+def profile_entry_14_fix(entry):
+    entry = entry.replace("\"","-")
+    entry = entry.replace("\'", "-")
+    return entry
+
+
+def store_data(soup,cur,year):
     url_list = re.findall('http://www.draftscout.com/members/ratings/profile.php\?pyid\=\d+', str(soup))
     for url in url_list:
-        profile_entry = parse_profiles(url)
+        final_url = get_final_url(url,year)
+        print(final_url)
+        profile_entry = parse_profiles(final_url)
         profile_entry = token_fix(profile_entry)
-        print(profile_entry)
-        cur.execute("INSERT INTO PLAYERS VALUES('%s')"
-          % (url))
-        # cur.execute("INSERT INTO PLAYERS VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')"
-        #  % (url,profile_entry[0],profile_entry[1],profile_entry[2],profile_entry[3],profile_entry[4],profile_entry[5],profile_entry[6],profile_entry[7],profile_entry[8],profile_entry[9],
-        #     profile_entry[10],profile_entry[11],profile_entry[12],profile_entry[13],profile_entry[14],profile_entry[15],profile_entry[16],profile_entry[17],profile_entry[18],profile_entry[19],
-        #     profile_entry[20],profile_entry[21],profile_entry[22],profile_entry[23],profile_entry[24]))
+        profile_entry[14] = profile_entry_14_fix(profile_entry[14])
+        print(profile_entry[14])
+        cur.execute("INSERT INTO PLAYERS VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')"
+          % (url,profile_entry[0],profile_entry[1],profile_entry[2],profile_entry[3],profile_entry[4],profile_entry[5],profile_entry[6],profile_entry[7],profile_entry[8],profile_entry[9],
+             profile_entry[10],profile_entry[11],profile_entry[12],profile_entry[13],profile_entry[14],profile_entry[15],profile_entry[16],profile_entry[17],profile_entry[18],profile_entry[19],
+             profile_entry[20],profile_entry[21],profile_entry[22],profile_entry[23],profile_entry[24]))
 
 def get_data(cur):
     #19
@@ -75,9 +89,8 @@ def get_data(cur):
         #90
         for listing in range(65,90):
             page = requests.get("http://www.draftscout.com/members/searchcollege.php?draftyear=" + str(1999 + year) + "&colabbr=" + chr(listing))
-            print("http://www.draftscout.com/members/searchcollege.php?draftyear=" + str(1999 + year) + "&colabbr=" + chr(listing))
             soup = BeautifulSoup(page.content, 'html.parser')
-            store_data(soup,cur)
+            store_data(soup,cur,1999+year)
 
 def attempt_connection():
     try:
@@ -87,9 +100,9 @@ def attempt_connection():
         print(e)
 
 def create_table(cur):
-    cur.execute("CREATE TABLE PLAYERS(URL TEXT)")
-
-    #cur.execute("CREATE TABLE PLAYERS(URL TEXT,NAME TEXT,POSITION TEXT,COLLEGE TEXT,CB_INVITE TEXT,CB_HEIGHT TEXT,CB_WEIGHT TEXT,CB_FORTY TEXT,CB_TWENTY TEXT,CB_TEN TEXT,CB_REPS TEXT,CB_VERT TEXT,CB_BROAD TEXT,CB_SHUTTLE TEXT,CB_DRILL TEXT, PRO_INVITE TEXT, PRO_HEIGHT TEXT,PRO_WEIGHT TEXT,PRO_FORTY TEXT,PRO_TWENTY TEXT,PRO_TEN TEXT,PRO_REPS TEXT,PRO_VERT TEXT,PRO_BROAD TEXT,PRO_SHUTTLE TEXT,PRO_DRILL TEXT)")
+    cur.execute("CREATE TABLE PLAYERS(URL TEXT,NAME TEXT,POSITION TEXT,COLLEGE TEXT,CB_INVITE TEXT,CB_HEIGHT TEXT,CB_WEIGHT TEXT,CB_FORTY TEXT,CB_TWENTY TEXT,CB_TEN TEXT,"
+                "CB_REPS TEXT,CB_VERT TEXT,CB_BROAD TEXT,CB_SHUTTLE TEXT,CB_DRILL TEXT, PRO_INVITE TEXT, PRO_HEIGHT TEXT,PRO_WEIGHT TEXT,PRO_FORTY TEXT,PRO_TWENTY TEXT,PRO_TEN TEXT,"
+                "PRO_REPS TEXT,PRO_VERT TEXT,PRO_BROAD TEXT,PRO_SHUTTLE TEXT,PRO_DRILL TEXT)")
 
 def main():
     url_list = []
