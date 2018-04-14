@@ -67,26 +67,25 @@ def profile_entry_14_fix(entry):
     entry = entry.replace("\'", "-")
     return entry
 
+def fix_name(name):
+	return name.replace("\'","-")
 
 def store_data(soup,cur,year):
     url_list = re.findall('http://www.draftscout.com/members/ratings/profile.php\?pyid\=\d+', str(soup))
     for url in url_list:
-        final_url = get_final_url(url,year)
+        final_url = get_final_url("http://www.draftscout.com/members/ratings/profile.php?pyid=1350",year)
         print(final_url)
         profile_entry = parse_profiles(final_url)
         profile_entry = token_fix(profile_entry)
+        profile_entry[0] = fix_name(profile_entry[0])
         profile_entry[14] = profile_entry_14_fix(profile_entry[14])
-        print(profile_entry[14])
         cur.execute("INSERT INTO PLAYERS VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')"
           % (url,profile_entry[0],profile_entry[1],profile_entry[2],profile_entry[3],profile_entry[4],profile_entry[5],profile_entry[6],profile_entry[7],profile_entry[8],profile_entry[9],
              profile_entry[10],profile_entry[11],profile_entry[12],profile_entry[13],profile_entry[14],profile_entry[15],profile_entry[16],profile_entry[17],profile_entry[18],profile_entry[19],
              profile_entry[20],profile_entry[21],profile_entry[22],profile_entry[23],profile_entry[24]))
 
 def get_data(cur):
-    #19
-    for year in range(18,19):
-        urls = []
-        #90
+    for year in range(1,19):
         for listing in range(65,90):
             page = requests.get("http://www.draftscout.com/members/searchcollege.php?draftyear=" + str(1999 + year) + "&colabbr=" + chr(listing))
             soup = BeautifulSoup(page.content, 'html.parser')
@@ -105,7 +104,6 @@ def create_table(cur):
                 "PRO_REPS TEXT,PRO_VERT TEXT,PRO_BROAD TEXT,PRO_SHUTTLE TEXT,PRO_DRILL TEXT)")
 
 def main():
-    url_list = []
     con = attempt_connection()
     with con:
         cur = con.cursor()
