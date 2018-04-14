@@ -1,6 +1,14 @@
 # -*- coding: utf-8 -*-
 import re
 
+def profile_entry_fix(entry):
+    entry = entry.replace("\"","-")
+    entry = entry.replace("\'", "-")
+    return entry
+
+def fix_name(name):
+    return name.replace("\'","-")
+
 def strip_rawpos(pl_list):
     strip_pos = pl_list[1].rfind(" ")
     pl_list[1] = pl_list[1][strip_pos+1:]

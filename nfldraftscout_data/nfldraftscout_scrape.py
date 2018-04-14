@@ -5,7 +5,7 @@ import sqlite3 as lite
 import requests
 from bs4 import BeautifulSoup
 from lxml.html.soupparser import fromstring
-from scrape_support import strip_rawpos, strip_rawline, edge_case, token_fix
+from scrape_support import strip_rawpos, strip_rawline, edge_case, token_fix, profile_entry_fix, fix_name
 
 def parse_profiles(url):
     page = requests.get(url)
@@ -62,23 +62,15 @@ def get_final_url(url,year):
     position = position_search.group(0)[-2:] 
     return(url+"&draftyear="+str(year)+"&genpos="+position)
 
-def profile_entry_14_fix(entry):
-    entry = entry.replace("\"","-")
-    entry = entry.replace("\'", "-")
-    return entry
-
-def fix_name(name):
-	return name.replace("\'","-")
-
 def store_data(soup,cur,year):
     url_list = re.findall('http://www.draftscout.com/members/ratings/profile.php\?pyid\=\d+', str(soup))
     for url in url_list:
-        final_url = get_final_url("http://www.draftscout.com/members/ratings/profile.php?pyid=1350",year)
-        print(final_url)
+        final_url = get_final_url(url,year)
         profile_entry = parse_profiles(final_url)
         profile_entry = token_fix(profile_entry)
         profile_entry[0] = fix_name(profile_entry[0])
-        profile_entry[14] = profile_entry_14_fix(profile_entry[14])
+        profile_entry[14] = profile_entry_fix(profile_entry[14])
+        profile_entry[22] = profile_entry_fix(profile_entry[22])
         cur.execute("INSERT INTO PLAYERS VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')"
           % (url,profile_entry[0],profile_entry[1],profile_entry[2],profile_entry[3],profile_entry[4],profile_entry[5],profile_entry[6],profile_entry[7],profile_entry[8],profile_entry[9],
              profile_entry[10],profile_entry[11],profile_entry[12],profile_entry[13],profile_entry[14],profile_entry[15],profile_entry[16],profile_entry[17],profile_entry[18],profile_entry[19],
