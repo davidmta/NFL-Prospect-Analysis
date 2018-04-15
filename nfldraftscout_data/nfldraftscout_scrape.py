@@ -8,15 +8,18 @@ from lxml.html.soupparser import fromstring
 from scrape_support import strip_rawpos, strip_rawline, edge_case, token_fix, profile_entry_fix, fix_name
 
 def parse_profiles(url):
-    page = requests.get(url)
-    soup = BeautifulSoup(page.content, 'html.parser')
-    personal_info = soup.find_all('b')
-    stats_info = soup.find_all('font')
-    profile_entry = []
-    profile_entry = parse_personal(personal_info,profile_entry,url)
-    for i in range(1,len(soup.find_all('font'))):
-        profile_entry = store_profile(profile_entry,personal_info,stats_info,i)
-    return profile_entry
+    try:
+        page = requests.get(url)
+        soup = BeautifulSoup(page.content, 'html.parser')
+        personal_info = soup.find_all('b')
+        stats_info = soup.find_all('font')
+        profile_entry = []
+        profile_entry = parse_personal(personal_info,profile_entry,url)
+        for i in range(1,len(soup.find_all('font'))):
+            profile_entry = store_profile(profile_entry,personal_info,stats_info,i)
+        return profile_entry
+    except:
+        return url
 
 def store_profile(profile_entry,personal_info,stats_info,i):
     link_str = stats_info[i].__str__()
@@ -67,21 +70,31 @@ def store_data(soup,cur,year):
     for url in url_list:
         final_url = get_final_url(url,year)
         profile_entry = parse_profiles(final_url)
-        profile_entry = token_fix(profile_entry)
-        profile_entry[0] = fix_name(profile_entry[0])
-        profile_entry[14] = profile_entry_fix(profile_entry[14])
-        profile_entry[22] = profile_entry_fix(profile_entry[22])
-        cur.execute("INSERT INTO PLAYERS VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')"
-          % (url,profile_entry[0],profile_entry[1],profile_entry[2],profile_entry[3],profile_entry[4],profile_entry[5],profile_entry[6],profile_entry[7],profile_entry[8],profile_entry[9],
-             profile_entry[10],profile_entry[11],profile_entry[12],profile_entry[13],profile_entry[14],profile_entry[15],profile_entry[16],profile_entry[17],profile_entry[18],profile_entry[19],
-             profile_entry[20],profile_entry[21],profile_entry[22],profile_entry[23],profile_entry[24]))
+        if(profile_entry == final_url){
+            cur.execute("INSERT INTO PLAYERS VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')"
+              % (url,"","","","","","","","","","","","","","","",,"","","","","","","","","",""))
+        }else{
+            profile_entry = token_fix(profile_entry)
+            profile_entry[0] = fix_name(profile_entry[0])
+            profile_entry[14] = profile_entry_fix(profile_entry[14])
+            profile_entry[22] = profile_entry_fix(profile_entry[22])
+            cur.execute("INSERT INTO PLAYERS VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')"
+              % (url,profile_entry[0],profile_entry[1],profile_entry[2],profile_entry[3],profile_entry[4],profile_entry[5],profile_entry[6],profile_entry[7],profile_entry[8],profile_entry[9],
+                 profile_entry[10],profile_entry[11],profile_entry[12],profile_entry[13],profile_entry[14],profile_entry[15],profile_entry[16],profile_entry[17],profile_entry[18],profile_entry[19],
+                 profile_entry[20],profile_entry[21],profile_entry[22],profile_entry[23],profile_entry[24]))
+        }
 
 def get_data(cur):
     for year in range(1,19):
         for listing in range(65,90):
-            page = requests.get("http://www.draftscout.com/members/searchcollege.php?draftyear=" + str(1999 + year) + "&colabbr=" + chr(listing))
-            soup = BeautifulSoup(page.content, 'html.parser')
-            store_data(soup,cur,1999+year)
+            try:
+                page = requests.get("http://www.draftscout.com/members/searchcollege.php?draftyear=" + str(1999 + year) + "&colabbr=" + chr(listing))
+                soup = BeautifulSoup(page.content, 'html.parser')
+                store_data(soup,cur,1999+year)
+            except:
+                print("ERROR")
+                print("http://www.draftscout.com/members/searchcollege.php?draftyear=" + str(1999 + year) + "&colabbr=" + chr(listing))
+
 
 def attempt_connection():
     try:
