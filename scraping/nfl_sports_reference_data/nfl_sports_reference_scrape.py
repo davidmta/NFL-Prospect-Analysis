@@ -28,8 +28,8 @@ def gather_stats(player_url):
 			hs_state = hs_state.split("=")[1]
 		if re.search('Defense &amp; Fumbles',p_str) != None:
 			defense_stats = parse_defense(p_str)
-        # elif re.search('pass_att',p_soup) != None:
-        #     pass_stats = parse_passing(p_soup,pass_stats)
+        elif re.search('pass_att',p_str) != None:
+            pass_stats = parse_passing(p_str)
         # elif re.search('rush_att',p_soup) != None:
         #     rr_stats = rushing_receiving(p_soup,rr_stats)
         # elif re.search('td_def_int',p_soup) != None:
