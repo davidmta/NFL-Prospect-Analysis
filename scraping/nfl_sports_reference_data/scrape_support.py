@@ -103,6 +103,7 @@ def parse_defense(p_str):
     	def_stats_entry[year] = defense_entry 
     return def_stats_entry;
 
-def parse_passing(p_str):
+def parse_passing(tr):
 	pass_stats_entry = {}
+	print tr
 	return pass_stats_entry

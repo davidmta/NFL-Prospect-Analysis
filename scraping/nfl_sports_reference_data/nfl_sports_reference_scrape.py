@@ -4,8 +4,7 @@ import re
 import sqlite3 as lite
 from bs4 import BeautifulSoup
 from lxml.html.soupparser import fromstring
-from scrape_support import strip_position,standardize_for_SQL,strip_brackets,strip_quotes,strip_birthplace,parse_defense
-
+from scrape_support import strip_position,standardize_for_SQL,strip_brackets,strip_quotes,strip_birthplace,parse_defense,parse_passing
 
 def gather_stats(player_url):
 	page = requests.get(player_url)
@@ -26,10 +25,17 @@ def gather_stats(player_url):
 			birthplace = strip_birthplace(birthplace_result.group(0))
 			hs_state = high_school_result.group(0)[:-2]
 			hs_state = hs_state.split("=")[1]
-		if re.search('Defense &amp; Fumbles',p_str) != None:
-			defense_stats = parse_defense(p_str)
-        elif re.search('pass_att',p_str) != None:
-            pass_stats = parse_passing(p_str)
+		trs = re.findall('\<tr\s\>.*?\<\/tr\>',page.content)
+		
+		#matching = [s for s in trs if "pass_cmp" in s]
+		for tr in trs:
+			print tr
+			print re.search('pass_cmp',tr) is not None
+		# # 	if re.search('Defense &amp; Fumbles',tr) != None:
+		# # 		defense_stats = parse_defense(tr)
+	 #        if re.search('pass_cmp',tr) is not None:
+	 #        	print "here"
+	        	#pass_stats = parse_passing(tr)
         # elif re.search('rush_att',p_soup) != None:
         #     rr_stats = rushing_receiving(p_soup,rr_stats)
         # elif re.search('td_def_int',p_soup) != None:
@@ -58,7 +64,8 @@ def get_players_stats(page,cur):
 			name = standardize_for_SQL(name_result.group(0))
 			position = strip_position(position_result.group(0))
 			years = years_result.group(0)
-			gather_stats('https://www.pro-football-reference.com' + player_url)
+			#gather_stats('https://www.pro-football-reference.com' + player_url)
+			gather_stats('https://www.pro-football-reference.com/players/L/LuckAn00.htm')
 
 def get_data(cur):
 	# for letter in range(ord('A'),ord('Z')+1):

@@ -70,10 +70,10 @@ def store_data(soup,cur,year):
     for url in url_list:
         final_url = get_final_url(url,year)
         profile_entry = parse_profiles(final_url)
-        if(profile_entry == final_url){
+        if(profile_entry == final_url):
             cur.execute("INSERT INTO PLAYERS VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')"
-              % (url,"","","","","","","","","","","","","","","",,"","","","","","","","","",""))
-        }else{
+              % (url,"","","","","","","","","","","","","","","","","","","","","","","","",""))
+        else:
             profile_entry = token_fix(profile_entry)
             profile_entry[0] = fix_name(profile_entry[0])
             profile_entry[14] = profile_entry_fix(profile_entry[14])
@@ -82,7 +82,7 @@ def store_data(soup,cur,year):
               % (url,profile_entry[0],profile_entry[1],profile_entry[2],profile_entry[3],profile_entry[4],profile_entry[5],profile_entry[6],profile_entry[7],profile_entry[8],profile_entry[9],
                  profile_entry[10],profile_entry[11],profile_entry[12],profile_entry[13],profile_entry[14],profile_entry[15],profile_entry[16],profile_entry[17],profile_entry[18],profile_entry[19],
                  profile_entry[20],profile_entry[21],profile_entry[22],profile_entry[23],profile_entry[24]))
-        }
+        
 
 def get_data(cur):
     for year in range(1,19):
